@@ -2,4 +2,8 @@
 books/
 papers/
 slides/
+codes/misc/
 .Ds_Store
+
+demo*
+requirements.txt
