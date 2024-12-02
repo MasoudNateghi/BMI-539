@@ -2,7 +2,9 @@
 books/
 papers/
 slides/
-codes/misc/
+project/codes/misc/
+project/codes/results/
+project/codes/models/
 .Ds_Store
 
 demo*
