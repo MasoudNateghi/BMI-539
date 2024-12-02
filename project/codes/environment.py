@@ -1,11 +1,9 @@
 import gym
 import numpy as np
-from utils.variables import fs_new
 from utils.lpf import lp_filter_zero_phase
 
-
 class ECGEnvironment(gym.Env):
-    def __init__(self, channel_data, train_indices, baseline_wander, window_seconds=5, fs=1000, snr_db=10):
+    def __init__(self, channel_data, fs, train_indices, baseline_wander, window_seconds=5, snr_db=10):
         """
         Args:
             channel_data: List of recordings for a specific channel
@@ -32,7 +30,7 @@ class ECGEnvironment(gym.Env):
 
         # Define action and observation spaces
         self.action_space = gym.spaces.Box(
-            low=np.array([0.0]),
+            low=np.array([0.0001]),
             high=np.array([1.0]),
             dtype=np.float32
         )
@@ -56,17 +54,17 @@ class ECGEnvironment(gym.Env):
     def add_baseline_wander(self, clean_signal):
         """Add random baseline wander segment at specified SNR"""
         # Get random segment of baseline wander
-        bw = self.get_random_baseline_segment(len(clean_signal))
+        noise = self.get_random_baseline_segment(len(clean_signal))
 
         # Calculate scaling factor for desired SNR
         clean_power = np.mean(clean_signal ** 2)
-        noise_power = np.mean(bw ** 2)
+        noise_power = np.mean(noise ** 2)
         target_noise_power = clean_power / (10 ** (self.snr_db / 10))
         scaling_factor = np.sqrt(target_noise_power / noise_power)
 
         # Add scaled baseline wander
-        noisy_signal = clean_signal + scaling_factor * bw
-        return noisy_signal, scaling_factor * bw
+        noisy_signal = clean_signal + scaling_factor * noise
+        return noisy_signal, scaling_factor * noise
 
     def reset(self):
         # Randomly select a recording
@@ -80,6 +78,10 @@ class ECGEnvironment(gym.Env):
         self.current_window = 0
         self.total_windows = len(self.clean_signal) // self.window_samples
 
+        # Reset LSTM states when starting new episode
+        if hasattr(self, 'policy'):
+            self.policy.reset_hidden_states()
+
         # Return first window
         return self.noisy_signal[:self.window_samples].astype(np.float32)
 
@@ -89,12 +91,12 @@ class ECGEnvironment(gym.Env):
         end_idx = start_idx + self.window_samples
 
         # Get filter parameters
-        fc = action[0]
+        cutt_off = action[0]
 
         # Apply filter
         filtered_signal = lp_filter_zero_phase(
             self.noisy_signal[start_idx:end_idx],
-            fc/fs_new
+            cutt_off / self.fs
         )
 
         # Calculate reward (negative MSE)
