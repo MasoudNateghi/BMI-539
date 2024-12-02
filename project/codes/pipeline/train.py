@@ -89,11 +89,9 @@ def train_model(channel_data, train_indices, baseline_wander,
 
     def callback(_locals, _globals):
         """Callback function to track metrics during training"""
-        if len(history['timesteps']) == 0 or \
-                _locals['self'].num_timesteps - history['timesteps'][-1] >= eval_freq:
+        if len(history['timesteps']) == 0 or _locals['self'].num_timesteps - history['timesteps'][-1] >= eval_freq:
             # Evaluate policy
-            mean_reward, std_reward, mean_mse, mean_snr = evaluate_policy(
-                _locals['self'], eval_env)
+            mean_reward, std_reward, mean_mse, mean_snr = evaluate_policy(_locals['self'], eval_env)
 
             # Store metrics
             history['timesteps'].append(_locals['self'].num_timesteps)
@@ -104,14 +102,6 @@ def train_model(channel_data, train_indices, baseline_wander,
             history['policy_loss'].append(_locals['self'].logger.name_to_value['train/policy_gradient_loss'])
             history['explained_variance'].append(_locals['self'].logger.name_to_value['train/explained_variance'])
             history['kl_divergence'].append(_locals['self'].logger.name_to_value['train/approx_kl'])
-
-            # Print current metrics
-            print(f"\nTimestep: {_locals['self'].num_timesteps}")
-            print(f"Mean reward: {mean_reward:.3f} ± {std_reward:.3f}")
-            print(f"Mean MSE: {mean_mse:.6f}")
-            print(f"Mean SNR: {mean_snr:.2f} dB")
-            print(f"Explained variance: {history['explained_variance'][-1]:.3f}")
-            print(f"KL divergence: {history['kl_divergence'][-1]:.3f}\n")
 
         return True
 

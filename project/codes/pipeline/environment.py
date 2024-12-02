@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 from utils.lpf import lp_filter_zero_phase
 
@@ -66,7 +66,11 @@ class ECGEnvironment(gym.Env):
         noisy_signal = clean_signal + scaling_factor * noise
         return noisy_signal, scaling_factor * noise
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        # Set the random seed if provided
+        if seed is not None:
+            np.random.seed(seed)
+
         # Randomly select a recording
         self.current_idx = np.random.choice(self.train_indices)
         self.clean_signal = self.channel_data[self.current_idx]
@@ -83,7 +87,7 @@ class ECGEnvironment(gym.Env):
             self.policy.reset_hidden_states()
 
         # Return first window
-        return self.noisy_signal[:self.window_samples].astype(np.float32)
+        return self.noisy_signal[:self.window_samples].astype(np.float32), {}
 
     def step(self, action):
         # Get current window indices
@@ -120,4 +124,4 @@ class ECGEnvironment(gym.Env):
             'noisy_signal': self.noisy_signal[start_idx:end_idx]
         }
 
-        return next_state.astype(np.float32), reward, truncated, info
+        return next_state.astype(np.float32), reward, truncated, {}, info

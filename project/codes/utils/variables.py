@@ -13,8 +13,9 @@ else:
     dataset_path = "/labs/samenilab/team/masoud_nateghi/data/physionet.org/files/ptbdb/1.0.0/"
     bw_path = "/labs/samenilab/team/masoud_nateghi/data/physionet.org/files/nstdb/1.0.0/bw"
 
-os.makedirs("models", exist_ok=True)
-os.makedirs("results", exist_ok=True)
+os.makedirs("misc/models", exist_ok=True)
+os.makedirs("misc/results", exist_ok=True)
+os.makedirs("misc/dataset", exist_ok=True)
 
 # variables
 fs_old = 1000  # Sampling frequency
