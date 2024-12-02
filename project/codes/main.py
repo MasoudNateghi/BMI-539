@@ -1,12 +1,12 @@
+import pickle
 import numpy as np
 from tqdm import tqdm
 from joblib import Parallel, delayed
 
+from pipeline.train import train_model
 from utils.variables import *
 from utils.processing import preproc
 from utils.dhandle import find_paths, extract_dataset
-
-from train import train_model
 
 # Prepare data
 paths = find_paths(dataset_path)
@@ -39,3 +39,8 @@ model, history = train_model(
     total_timesteps=10000,  # Increase training time
     eval_freq=1000  # Evaluate every 10000 steps
 )
+
+# save the model and history
+model.save("models/model")
+with open('models/training_history.pkl', 'wb') as f:
+    pickle.dump(history, f)
