@@ -30,7 +30,7 @@ class ECGEnvironment(gym.Env):
 
         # Define action and observation spaces
         self.action_space = gym.spaces.Box(
-            low=np.array([0.0001]),
+            low=np.array([0.01]),
             high=np.array([1.0]),
             dtype=np.float32
         )
@@ -98,10 +98,7 @@ class ECGEnvironment(gym.Env):
         cutt_off = action[0]
 
         # Apply filter
-        filtered_signal = lp_filter_zero_phase(
-            self.noisy_signal[start_idx:end_idx],
-            cutt_off / self.fs
-        )
+        filtered_signal = self.noisy_signal[start_idx:end_idx] - lp_filter_zero_phase(self.noisy_signal[start_idx:end_idx], cutt_off / self.fs)
 
         # Calculate reward (negative MSE)
         clean_segment = self.clean_signal[start_idx:end_idx]
