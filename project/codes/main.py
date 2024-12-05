@@ -47,8 +47,8 @@ model, history = train_model(
     window_seconds=5,
     fs=fs,
     snr_db=10,
-    total_timesteps=100000,  # Increase training time
-    eval_freq=500  # Evaluate every 10000 steps
+    total_timesteps=100000,
+    eval_freq=500
 )
 
 # save the model and history
