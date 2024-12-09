@@ -1,4 +1,5 @@
 import pickle
+import numpy as np
 import matplotlib.pyplot as plt
 
 # Load history
@@ -27,20 +28,14 @@ plt.ylabel('SNR (dB)', fontsize=25)
 plt.savefig("misc/results/snr.png")
 plt.close()
 
-plt.figure(figsize=(15, 10))
-plt.plot(history['timesteps'], history['value_loss'], label='Value Loss')
-plt.plot(history['timesteps'], history['policy_loss'], label='Policy Loss')
-plt.xlabel('Episodes', fontsize=25)
-plt.ylabel('Loss', fontsize=25)
-plt.legend()
-plt.savefig("misc/results/training_losses.png")
-plt.close()
+data = np.concatenate(history['fc_values'])
+window_size = 1000
+smoothened_data = np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
-plt.figure(figsize=(15, 10))
-plt.plot(history['timesteps'], history['kl_divergence'], label='KL Divergence')
-plt.plot(history['timesteps'], history['explained_variance'], label='Explained Variance')
-plt.xlabel('Episodes', fontsize=25)
-plt.ylabel('Value', fontsize=25)
-plt.legend()
-plt.savefig("misc/results/kl_divergence_explained_variance.png")
+plt.figure(figsize=(8, 6))
+plt.plot(data)
+plt.plot(smoothened_data)
+plt.xlabel('Segments', fontsize=25)
+plt.ylabel('Frequency', fontsize=25)
+plt.savefig("misc/results/fc_values.png")
 plt.close()

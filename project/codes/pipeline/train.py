@@ -51,7 +51,7 @@ def evaluate_policy(model, env, n_eval_episodes=10):
 
 def train_model(channel_data, train_indices, baseline_wander,
                 window_seconds=5, fs=fs, snr_db=10, total_timesteps=100000,
-                eval_freq=10000):
+                eval_freq=10000, n_eval_episodes=10):
     """Train model with monitoring"""
     # Create and wrap environment
     env = ECGEnvironment(
@@ -84,7 +84,8 @@ def train_model(channel_data, train_indices, baseline_wander,
         'policy_loss': [],
         'explained_variance': [],
         'kl_divergence': [],
-        'timesteps': []
+        'timesteps': [],
+        'fc_values': []
     }
 
     def callback(_locals, _globals):
@@ -102,6 +103,19 @@ def train_model(channel_data, train_indices, baseline_wander,
             history['policy_loss'].append(_locals['self'].logger.name_to_value['train/policy_gradient_loss'])
             history['explained_variance'].append(_locals['self'].logger.name_to_value['train/explained_variance'])
             history['kl_divergence'].append(_locals['self'].logger.name_to_value['train/approx_kl'])
+
+            # Log actions (fc values)
+            fc_values = []
+            for _ in range(n_eval_episodes):
+                obs = eval_env.reset()
+                done = False
+                while not done:
+                    action, _ = _locals['self'].predict(obs, deterministic=True)
+                    obs, reward, done, info = eval_env.step(action)
+                    info = info[0]  # Extract the first (and only) environment's info
+                    fc_values.append(info['fc'])  # Log fc from info
+
+            history['fc_values'].append(fc_values)  # Add fc_values to history
 
         return True
 

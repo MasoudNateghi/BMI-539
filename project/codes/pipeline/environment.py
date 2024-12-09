@@ -118,7 +118,8 @@ class ECGEnvironment(gym.Env):
         info = {
             'filtered_signal': filtered_signal,
             'clean_signal': clean_segment,
-            'noisy_signal': self.noisy_signal[start_idx:end_idx]
+            'noisy_signal': self.noisy_signal[start_idx:end_idx],
+            'fc': cutt_off
         }
 
         return next_state.astype(np.float32), reward, truncated, {}, info
