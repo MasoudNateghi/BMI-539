@@ -32,7 +32,7 @@ data = np.concatenate(history['fc_values'])
 window_size = 1000
 smoothened_data = np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
-plt.figure(figsize=(8, 6))
+plt.figure(figsize=(15, 10))
 plt.plot(data)
 plt.plot(smoothened_data)
 plt.xlabel('Segments', fontsize=25)

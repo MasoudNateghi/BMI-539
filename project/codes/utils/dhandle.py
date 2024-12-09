@@ -1,7 +1,14 @@
 # This file contains functions to load data.
 import os
 import wfdb
+import pickle
 from tqdm import tqdm
+from joblib import Parallel, delayed
+
+from utils.variables import *
+from utils.processing import preproc
+
+from project.codes.utils.variables import dataset_path
 
 
 def find_paths(dataset_path):
@@ -30,3 +37,34 @@ def extract_dataset(paths, channels=None):
         records.append(ecg_data)
 
     return records
+
+def load_data(data_path=dataset_path):
+    if os.path.exists("misc/dataset/data.pkl"):
+        print("Dataset already exists. Loading...")
+        with open("misc/dataset/data.pkl", "rb") as f:
+            data = pickle.load(f)
+    else:
+        print("Dataset not found. Creating...")
+
+        # Prepare data
+        paths = find_paths(data_path)
+        records = extract_dataset(paths)
+        nChannels = records[0].shape[0]
+
+        # Creating ground truth by an aggressive low-pass filtering
+        records = Parallel(n_jobs=-1)(
+            delayed(preproc)(record, fc, fs, fs_old, order=64, Q_factor=30, freq=50)
+            for record in tqdm(records, desc="Preprocessing ECG signals: ")
+        )
+
+        # Separating channels across records in a dictionary
+        data = {}  # Dictionary to store channels
+        for record in records:
+            for channel in range(nChannels):
+                data[channel] = data.get(channel, []) + [record[channel]]
+
+        # Save the data
+        with open("misc/dataset/data.pkl", "wb") as f:
+            pickle.dump(data, f)
+
+    return data
