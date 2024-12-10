@@ -4,6 +4,6 @@ papers/
 slides/
 project/codes/misc/
 .Ds_Store
-
+__pycache__/
 demo*
 requirements.txt
